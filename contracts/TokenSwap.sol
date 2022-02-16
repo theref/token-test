@@ -36,25 +36,24 @@ contract TokenSwap {
         uint256 _tokenARatio,
         uint256 _tokenBRatio
     ) {
-        TokenARatio = _tokenARatio;
-        TokenBRatio = _tokenBRatio;
         TokenA = IERC20(_tokenA);
         TokenB = IERC20(_tokenB);
+        TokenARatio = _tokenARatio;
+        TokenBRatio = _tokenBRatio;
     }
 
-    function _AtoB(uint256 amount) internal view returns (uint256) {
-        return (amount * TokenBRatio) / TokenARatio;
-    }
-
-    function _BtoA(uint256 amount) internal view returns (uint256) {
-        return (amount * TokenARatio) / TokenBRatio;
+    function _AtoB(uint256 amount) internal view returns (uint256, uint256) {
+        uint256 useable = amount - (amount % TokenARatio);
+        return ((useable * TokenBRatio) / TokenARatio, useable);
     }
 
     function swapAforB(uint256 amount) public {
-        uint256 BAmount = _AtoB(amount);
+        uint256 BAmount;
+        uint256 useable;
+        (BAmount, useable) = _AtoB(amount);
         uint256 allowance = TokenA.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Check the token allowance");
-        TokenA.transferFrom(msg.sender, address(this), amount);
+        require(allowance >= useable, "Check the token allowance");
+        TokenA.transferFrom(msg.sender, address(this), useable);
         TokenB.transfer(msg.sender, BAmount);
     }
 }
