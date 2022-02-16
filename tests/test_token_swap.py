@@ -1,17 +1,17 @@
 import brownie
-from brownie import accounts, BeerToken, CoffeeToken, TokenSwap
+from brownie import accounts, BasicToken, TokenSwap
 from web3 import Web3
 import pytest
 
 
 @pytest.fixture
-def beer(BeerToken, accounts):
-    return BeerToken.deploy({"from": accounts[0]})
+def beer(accounts):
+    return BasicToken.deploy("Beer Token", "BEER", {"from": accounts[0]})
 
 
 @pytest.fixture
-def coffee(CoffeeToken, accounts):
-    return CoffeeToken.deploy({"from": accounts[0]})
+def coffee(accounts):
+    return BasicToken.deploy("Coffee Token", "COFF", {"from": accounts[0]})
 
 
 def setup_swap(beer, coffee, beer_ratio, coffee_ratio):
@@ -19,9 +19,9 @@ def setup_swap(beer, coffee, beer_ratio, coffee_ratio):
         beer.address, coffee.address, beer_ratio, coffee_ratio, {"from": accounts[0]}
     )
     user = accounts[1]
-    tx = beer.getBeer({"from": swap.address})
-    tx = beer.getBeer({"from": user})
-    tx = coffee.getCoffee({"from": swap.address})
+    tx = beer.faucet({"from": swap.address})
+    tx = beer.faucet({"from": user})
+    tx = coffee.faucet({"from": swap.address})
     tx.wait(1)
     return swap, user
 
@@ -52,7 +52,22 @@ def test_unbalanced_swap(beer, coffee):
     assert coffee.balanceOf(user) == 5
 
 
+def test_non_integer_swap(beer, coffee):
+    swap, user = setup_swap(beer, coffee, 3, 2)
+    tx = beer.approve(swap.address, 10, {"from": user})
+    tx.wait(1)
+    tx = swap.swapAforB(10, {"from": user})
+    tx.wait(1)
+    assert beer.balanceOf(user) == 91
+    assert coffee.balanceOf(user) == 6
+
+
 def test_decimal_swap(beer, coffee):
+    """Handling of decimals should be done off-chain, not on-chain.
+    With the current setup that is easy, the ratio values just need to be
+    adjusted to match the decimal values of the tokens.
+
+    """
     swap, user = setup_swap(beer, coffee, 3, 2)
     tx = beer.approve(swap.address, 10, {"from": user})
     tx.wait(1)
