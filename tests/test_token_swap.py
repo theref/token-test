@@ -90,8 +90,8 @@ def test_decimal_swap(house, car):
     tx.wait(1)
     tx = swap.swapAforB(300, {"from": user})
     tx.wait(1)
-    assert house.balanceOf(user) == 9999700
-    assert car.balanceOf(user) == 2000000
+    assert house.balanceOf(user) == 9_999_700
+    assert car.balanceOf(user) == 2_000_000
     with brownie.reverts():
         tx = swap.swapAforB(2, {"from": user})
         tx.wait(1)
