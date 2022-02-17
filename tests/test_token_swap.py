@@ -39,8 +39,8 @@ def setup_swap(beer, coffee, beer_ratio, coffee_ratio):
 
 def test_deploy_token_swap(beer, coffee):
     swap, _ = setup_swap(beer, coffee, 1, 1)
-    assert beer.balanceOf(swap.address) == 100000
-    assert coffee.balanceOf(swap.address) == 100000
+    assert beer.balanceOf(swap.address) == 10000000
+    assert coffee.balanceOf(swap.address) == 10000000
 
 
 def test_swap(beer, coffee):
@@ -49,7 +49,7 @@ def test_swap(beer, coffee):
     tx.wait(1)
     tx = swap.swapAforB(10, {"from": user})
     tx.wait(1)
-    assert beer.balanceOf(user) == 99990
+    assert beer.balanceOf(user) == 9999990
     assert coffee.balanceOf(user) == 10
 
 
@@ -59,7 +59,7 @@ def test_unbalanced_swap(beer, coffee):
     tx.wait(1)
     tx = swap.swapAforB(10, {"from": user})
     tx.wait(1)
-    assert beer.balanceOf(user) == 99990
+    assert beer.balanceOf(user) == 9999990
     assert coffee.balanceOf(user) == 5
 
 
@@ -69,7 +69,7 @@ def test_non_integer_swap(beer, coffee):
     tx.wait(1)
     tx = swap.swapAforB(10, {"from": user})
     tx.wait(1)
-    assert beer.balanceOf(user) == 99991
+    assert beer.balanceOf(user) == 9999991
     assert coffee.balanceOf(user) == 6
 
 
@@ -80,18 +80,18 @@ def test_decimal_swap(house, car):
     Assume a House token with 2 decimal places, and a car token with 5 decimal places.
     Also assume that the ratio is 3:20 (3 House tokens for every 20 car tokens).
 
-    The contracts internal representation needs to be 300000:2000 (3 * 10 ** 5 : 20 * 10 ** 2).
+    The contracts internal representation needs to be 300:200000 (3 * 10 ** 2 : 20 * 10 ** 5).
 
     """
     swap, user = setup_swap(
-        house, car, 3 * 10 ** car.decimals(), 20 * 10 ** house.decimals()
+        house, car, 3 * 10 ** house.decimals(), 20 * 10 ** car.decimals()
     )
-    tx = house.approve(swap.address, 3000, {"from": user})
+    tx = house.approve(swap.address, 300, {"from": user})
     tx.wait(1)
-    tx = swap.swapAforB(3000, {"from": user})
+    tx = swap.swapAforB(300, {"from": user})
     tx.wait(1)
-    assert house.balanceOf(user) == 97000
-    assert car.balanceOf(user) == 20
+    assert house.balanceOf(user) == 9999700
+    assert car.balanceOf(user) == 2000000
     with brownie.reverts():
         tx = swap.swapAforB(2, {"from": user})
         tx.wait(1)
