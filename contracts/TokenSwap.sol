@@ -19,7 +19,7 @@ contract BasicToken is ERC20 {
     }
 
     function faucet() public {
-        _mint(msg.sender, 100000);
+        _mint(msg.sender, 10000000);
     }
 }
 
@@ -44,14 +44,10 @@ contract TokenSwap {
     }
 
     function _GCD(uint256 a, uint256 b) internal returns (uint256) {
-        if (a == b) {
+        if (b == 0) {
             return a;
         }
-        if (a > b) {
-            return _GCD(a - b, b);
-        } else {
-            return _GCD(a, b - a);
-        }
+        return _GCD(b, a % b);
     }
 
     function _AtoB(uint256 amount) internal view returns (uint256, uint256) {
